@@ -26,4 +26,27 @@ class QuestionBank {
         list.append(Question(text: "No piece of square dry paper can be folded in half more than 7 times.", correctAnswer: false))
         list.append(Question(text: "Chocolate affects a dog\'s heart and nervous system; a few ounces are enough to kill a small dog.", correctAnswer: true))
     }
+    
+    func getQuestionText(index: Int) -> String {
+        return list[index].text
+    }
+    
+    func getQuestionAnswer(index: Int) -> Bool {
+        return list[index].correctAnswer
+    }
+    
+    func shuffleQuestions() {
+        list = shuffle(count: (list.count - 1), questions: list)
+    }
+    
+    private func shuffle(count: Int, questions: [Question]) -> [Question] {
+        var shufflingList = questions
+        if count > 0 {
+            let rand = Int(arc4random_uniform(UInt32(count)))
+            shufflingList.swapAt(count, rand)
+            return shuffle(count: (count - 1), questions: shufflingList)
+        } else {
+            return shufflingList
+        }
+    }
 }

@@ -9,10 +9,7 @@
 import UIKit
 
 class ViewController: UIViewController {
-    
-    //Place your instance variables here
     let allQuestions        = QuestionBank()
-    var pickedAnswer: Bool  = false
     var questionNumber: Int = 0
     var score: Int          = 0
     
@@ -23,56 +20,58 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        allQuestions.shuffleQuestions()
         nextQuestion()
     }
 
     @IBAction func answerPressed(_ sender: AnyObject) {
-        if sender.tag == 1 {
-            pickedAnswer = true
-        } else if sender.tag == 2 {
-            pickedAnswer = false
+        func evaluateButtonPress() -> Bool {
+            switch sender.tag {
+                case 1:  return true
+                default: return false
+            }
         }
-        
-        checkAnswer()
-        questionNumber += 1
-
+        checkAnswer(selectedAnswer: evaluateButtonPress())
         nextQuestion()
     }
     
-    func updateUI() {
+    private func updateUI() {
         scoreLabel.text              = "Score: \(score)"
         progressLabel.text           = "\(questionNumber + 1)/\(allQuestions.list.count)"
         progressBar.frame.size.width = (view.frame.size.width / CGFloat(13)) * CGFloat(questionNumber + 1)
     }
     
-    func nextQuestion() {
+    private func nextQuestion() {
         if questionNumber <= 12 {
-            questionLabel.text = allQuestions.list[questionNumber].questionText
+            questionLabel.text = allQuestions.getQuestionText(index: questionNumber)
             updateUI()
         } else {
-            let alert         = UIAlertController(title: "You have finished the quiz", message: "Would you like to restart?", preferredStyle: .alert)
-            let restartAction = UIAlertAction(title: "Restart", style: .default, handler: { (UIAlertAction) in
-                self.startOver()
-            })
-            
-            alert.addAction(restartAction)
-            present(alert, animated: true, completion: nil)
+            showRestartDialog()
         }
     }
     
-    func checkAnswer() {
-        let correctAnswer = allQuestions.list[questionNumber].answer
-        if correctAnswer == pickedAnswer {
+    private func checkAnswer(selectedAnswer: Bool) {
+        let correct = selectedAnswer == allQuestions.getQuestionAnswer(index: questionNumber)
+        if correct {
             score += 1
             ProgressHUD.showSuccess("Correct")
         } else {
             ProgressHUD.showError("Wrong")
         }
+        questionNumber += 1
     }
     
-    func startOver() {
+    private func startOver() {
         questionNumber = 0
         score          = 0
+        allQuestions.shuffleQuestions()
         nextQuestion()
+    }
+    
+    private func showRestartDialog() {
+        let alert         = UIAlertController(title: "You have finished the quiz", message: "Would you like to restart?", preferredStyle: .alert)
+        let restartAction = UIAlertAction(title: "Restart", style: .default, handler: { (UIAlertAction) in self.startOver() })
+        alert.addAction(restartAction)
+        present(alert, animated: true, completion: nil)
     }
 }
